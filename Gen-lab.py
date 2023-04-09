@@ -1,14 +1,159 @@
 # Maze generator -- Randomized Prim Algorithm
 
 ## Imports
+
+import networkx as nx
+import matplotlib.pyplot as plt
+
+from clases import nodo 
+from clases import camino
 import random
 import time
 import numpy as np
 from colorama import init
 from colorama import Fore, Back, Style
 
+
+
+
+
 ## izquierda:-1 ,derecha: +1, arriba: -1,abajo +1
 ## Functions
+
+    
+def primeroAnchura(maze):
+	
+	nodoI=nodo(9,9)
+	nodoF = nodo(0,0)
+	listaCamino=[]
+	listaVisitados = set()
+	listaCola = []
+	listaCola.append(nodoI)
+	while listaCola:
+		nodoA=listaCola.pop(0)
+		if(nodoA not in listaVisitados):
+			listaVecino = []
+			listaVisitados.add(nodoA)
+			listaVecino=obtenerCamino(maze,nodoA)
+			for e in listaVecino:
+				if(e not in listaVisitados):
+					listaCola.append(e)
+					nodoAux=camino(nodoA,e)
+					listaCamino.append(nodoAux)
+		
+
+
+
+	listacaminos = [
+	{'posX': 0, 'posY': 0, 'padre': None, 'hijos': [(1, 0), (0, 1)]},
+	{'posX': 1, 'posY': 0, 'padre': (0, 0), 'hijos': [(2, 0)]},
+	{'posX': 0, 'posY': 1, 'padre': (0, 0), 'hijos': [(1, 1)]},
+	{'posX': 2, 'posY': 0, 'padre': (1, 0), 'hijos': []},
+	{'posX': 1, 'posY': 1, 'padre': (0, 1), 'hijos': []}
+]
+
+	# Convertir la lista en un diccionario
+	dicc_nodos = {}
+	for c in listacaminos:
+		pos = (c['posX'], c['posY'])
+		padre = c['padre']
+		hijos = [tuple(h) for h in c['hijos']]
+		dicc_nodos[pos] = {'padre': padre, 'hijos': hijos}
+
+	# Crear el grafo jerárquico a partir del diccionario
+	G = nx.DiGraph(dicc_nodos)
+
+	# Obtener la posición de los nodos en el layout
+	pos = nx.kamada_kawai_layout(G)
+
+	# Dibujar el grafo
+	nx.draw(G, pos=pos, with_labels=True)
+	plt.show()
+	
+	"""
+	root = tk.Tk()
+
+	canvas = tk.Canvas(root, width=700, height=1000)
+	canvas.pack()
+
+	for c in listaCamino:
+		padre_x = c.nodoP.posX
+		padre_y = c.nodoP.posY
+		hijo_x = c.nodoH.posX
+		hijo_y = c.nodoH.posY
+		
+		# Dibujar el círculo del padre
+		canvas.create_oval(padre_x - 20, padre_y - 20, padre_x + 20, padre_y + 20, fill='blue')
+		
+		# Dibujar el círculo del hijo
+		canvas.create_oval(hijo_x - 20, hijo_y - 20, hijo_x + 20, hijo_y + 20, fill='blue')
+		
+		# Dibujar la línea que los conecta
+		canvas.create_line(padre_x, padre_y, hijo_x, hijo_y)
+
+	root.mainloop()
+"""
+def obtenerCamino(maze,n):
+	listaCamino=[]
+	px=n.posX
+	py=n.posY
+	
+	if(py+1<10 and px<10 and px>=0):
+		if maze[px][py+1]=='0' or maze[px][py+1]=='F' :
+			listaCamino.append(nodo(px,py+1))
+			
+	if(py-1>=0 and px<10 and px>=0):
+		if maze[px][py-1]=='0' or maze[px][py-1]=='F':
+			listaCamino.append(nodo(px,py-1))
+
+	if(px-1>=0 and py<10 and py>=0):
+		if maze[px-1][py]=='0' or maze[px-1][py]=='F':
+			listaCamino.append(nodo(px-1,py))
+
+	if(px+1<10 and py<10 and py>=0):
+		if maze[px+1][py]=='0' or maze[px+1][py]=='F':
+			listaCamino.append(nodo(px+1,py))
+			
+	return listaCamino
+
+
+"""
+def obtenerCamino(maze,n):
+	listaCamino=[]
+	px=n.posX
+	py=n.posY
+	print("aca esta la px",px)
+	print('inicio',px,py)
+	if(px+1<10 and py<10 and py>=0):
+		if maze[px+1][py]=='0':
+			guardarPos(px,py,px+1,py,listaCamino)
+			print('abajo',px+1,py)
+
+	if(px-1>0 and py<10 and py>=0):
+		if maze[px-1][py]=='0':
+			guardarPos(px,py,px-1,py,listaCamino)
+			print('arriba',px-1,py)
+
+	if(py+1<10 and px<10 and px>=0):
+		if maze[px][py+1]=='0':
+			guardarPos(px,py,px,py+1,listaCamino)
+			print('der',px,py+1)
+			
+	if(py-1>=0 and px<10 and px>=0):
+		if maze[px][py-1]=='0':
+			guardarPos(px,py,px,py-1,listaCamino)
+			print('izq',px,py-1)
+	return listaCamino
+		
+def guardarPos(pospX,pospY,poshX,poshY,listaCamino):
+	posicionP = nodo(pospX, pospY)
+	posicionH = nodo(poshX, poshY)
+	nodoP = camino(posicionP,posicionH)
+	listaCamino.append(nodoP)
+"""
+
+
+
 def buscar_posiciones(maze,i,j):
 	posiciones = []
 
@@ -289,51 +434,54 @@ maze[9][8] = cell
 # Print final maze
 printMaze(maze)
 
-der=0
-izq=0
-arriba=0
-abajo=0
+primeroAnchura(maze)
 
-num_a_buscar = 'x'
-posicion =[]
-grafo = []
-camino = []
-i=9
-j=9
+
+
 ## izquierda:-1 ,derecha: +1, arriba: -1,abajo +1
-while (i>0):
-	while (j>0):
-		if(maze[i][j]=='0' or maze[i][j]== 'F' or maze[i][j]== 'I'):
-			
-			print(i,j)
-			posicion = (buscar_posiciones(maze,i,j)) 
-			print(posicion)
-			if([i,j] in grafo):
 
-				i=i+1
-				break
-			else:
-				if('arr' in posicion ):
-					i=i-1
-					camino.append([i,j])
+
+
+
+
+			
+"""
+	while (i>0):
+		while (j>0):
+			if(maze[i][j]=='0' or maze[i][j]== 'F' or maze[i][j]== 'I'):
 				
+				print(i,j)
+				posicion = (buscar_posiciones(maze,i,j)) 
+				print(posicion)
+				if([i,j] in grafo):
+
+					i=i+1
+					break
 				else:
-					if('izq' in posicion):
-						j=j-1
+					if('arr' in posicion ):
+						i=i-1
 						camino.append([i,j])
-						break
-					if('der' in posicion):
-						j=j+1
-						camino.append([i,j])
-						break
-					if('abj' in posicion):
-						grafo=camino
-						print("la concha de tu madre")
-						print(grafo)
-						i=i+1
-						break
 					
-		else:
-			j=j-1			
-					
+					else:
+						if('izq' in posicion):
+							j=j-1
+							camino.append([i,j])
+							break
+						if('der' in posicion):
+							j=j+1
+							camino.append([i,j])
+							break
+						if('abj' in posicion):
+							grafo=camino
+							print("la concha de tu madre")
+							print(grafo)
+							i=i+1
+							break
+						
+			else:
+				j=j-1			
+"""
+
+
+
 
