@@ -2,9 +2,12 @@
 
 ## Imports
 
+import matplotlib.pyplot as plt
+from PIL import Image
 import networkx as nx
 import matplotlib.pyplot as plt
-
+from networkx.drawing.nx_agraph import graphviz_layout
+import graphviz
 from clases import nodo 
 from clases import camino
 import random
@@ -20,6 +23,27 @@ from colorama import Fore, Back, Style
 ## izquierda:-1 ,derecha: +1, arriba: -1,abajo +1
 ## Functions
 
+
+def generar_arbol_jerarquico(listacamino):
+    g = graphviz.Digraph(format='png')
+    nodos_visitados = set()
+    for camino in listacamino:
+        nodo_padre = (camino.nodoP.posX,camino.nodoP.posY)
+        nodo_hijo = camino.nodoH.posX,camino.nodoH.posY
+        if nodo_padre not in nodos_visitados:
+            g.node(str(nodo_padre))
+            nodos_visitados.add(nodo_padre)
+        if nodo_hijo not in nodos_visitados:
+            g.node(str(nodo_hijo))
+            nodos_visitados.add(nodo_hijo)
+        g.edge(str(nodo_padre), str(nodo_hijo))
+    g.render('arbol_primero_anchura')
+    
+   
+
+# Luego de generar la lista de camino con primeroAnchura(maze)...
+
+
     
 def primeroAnchura(maze):
 	
@@ -29,6 +53,7 @@ def primeroAnchura(maze):
 	listaVisitados = set()
 	listaCola = []
 	listaCola.append(nodoI)
+	 
 	while listaCola:
 		nodoA=listaCola.pop(0)
 		if(nodoA not in listaVisitados):
@@ -41,58 +66,18 @@ def primeroAnchura(maze):
 					nodoAux=camino(nodoA,e)
 					listaCamino.append(nodoAux)
 		
-
-
-
-	listacaminos = [
-	{'posX': 0, 'posY': 0, 'padre': None, 'hijos': [(1, 0), (0, 1)]},
-	{'posX': 1, 'posY': 0, 'padre': (0, 0), 'hijos': [(2, 0)]},
-	{'posX': 0, 'posY': 1, 'padre': (0, 0), 'hijos': [(1, 1)]},
-	{'posX': 2, 'posY': 0, 'padre': (1, 0), 'hijos': []},
-	{'posX': 1, 'posY': 1, 'padre': (0, 1), 'hijos': []}
-]
-
-	# Convertir la lista en un diccionario
-	dicc_nodos = {}
-	for c in listacaminos:
-		pos = (c['posX'], c['posY'])
-		padre = c['padre']
-		hijos = [tuple(h) for h in c['hijos']]
-		dicc_nodos[pos] = {'padre': padre, 'hijos': hijos}
-
-	# Crear el grafo jerárquico a partir del diccionario
-	G = nx.DiGraph(dicc_nodos)
-
-	# Obtener la posición de los nodos en el layout
-	pos = nx.kamada_kawai_layout(G)
-
-	# Dibujar el grafo
-	nx.draw(G, pos=pos, with_labels=True)
-	plt.show()
+		# Crear un grafo vacío
 	
-	"""
-	root = tk.Tk()
+	generar_arbol_jerarquico(listaCamino)
 
-	canvas = tk.Canvas(root, width=700, height=1000)
-	canvas.pack()
 
-	for c in listaCamino:
-		padre_x = c.nodoP.posX
-		padre_y = c.nodoP.posY
-		hijo_x = c.nodoH.posX
-		hijo_y = c.nodoH.posY
-		
-		# Dibujar el círculo del padre
-		canvas.create_oval(padre_x - 20, padre_y - 20, padre_x + 20, padre_y + 20, fill='blue')
-		
-		# Dibujar el círculo del hijo
-		canvas.create_oval(hijo_x - 20, hijo_y - 20, hijo_x + 20, hijo_y + 20, fill='blue')
-		
-		# Dibujar la línea que los conecta
-		canvas.create_line(padre_x, padre_y, hijo_x, hijo_y)
 
-	root.mainloop()
-"""
+		
+
+	
+
+	
+
 def obtenerCamino(maze,n):
 	listaCamino=[]
 	px=n.posX
