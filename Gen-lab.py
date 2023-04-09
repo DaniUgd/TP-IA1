@@ -29,7 +29,7 @@ def generar_arbol_jerarquico(listacamino):
     nodos_visitados = set()
     for camino in listacamino:
         nodo_padre = (camino.nodoP.posX,camino.nodoP.posY)
-        nodo_hijo = camino.nodoH.posX,camino.nodoH.posY
+        nodo_hijo = (camino.nodoH.posX,camino.nodoH.posY)
         if nodo_padre not in nodos_visitados:
             g.node(str(nodo_padre))
             nodos_visitados.add(nodo_padre)
