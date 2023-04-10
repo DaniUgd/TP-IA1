@@ -23,29 +23,48 @@ from colorama import Fore, Back, Style
 ## izquierda:-1 ,derecha: +1, arriba: -1,abajo +1
 ## Functions
 
+def primeroProfundidad(maze):
+    nodoI = nodo(9,9)
+    nodoF = nodo(0,0)
+    listaCamino=[]
+    listaVisitados = set()
+    listaCola = []
+    listaCola.append(nodoI)
 
-def generar_arbol_jerarquico(listacamino):
+    while listaCola:
+        nodoA=listaCola.pop()
+        if(nodoA not in listaVisitados):
+            listaVisitados.add(nodoA)
+            if nodoA == nodoF:
+                generar_arbol_jerarquico(listaCamino,2)
+                return None
+            listaVecino=obtenerCamino(maze,nodoA)
+
+            for v in listaVecino:
+                if (v.posX, v.posY) not in listaVisitados:
+                    nodo_padre = nodoA
+                    nodo_hijo = nodo(v.posX, v.posY)
+                    listaCamino.append(camino(nodo_padre, nodo_hijo))
+                    listaCola.append(nodo(v.posX, v.posY))
+
+    
+
+
+def generar_arbol_jerarquico(listacamino,i):
     g = graphviz.Digraph(format='png')
     nodos_visitados = set()
     for camino in listacamino:
         nodo_padre = (camino.nodoP.posX,camino.nodoP.posY)
         nodo_hijo = (camino.nodoH.posX,camino.nodoH.posY)
-        if nodo_padre not in nodos_visitados:
-            g.node(str(nodo_padre))
-            nodos_visitados.add(nodo_padre)
-        if nodo_hijo not in nodos_visitados:
-            g.node(str(nodo_hijo))
-            nodos_visitados.add(nodo_hijo)
         g.edge(str(nodo_padre), str(nodo_hijo))
-    g.render('arbol_primero_anchura')
-    
-   
+    if(i==1):
+        g.render('arbol_primero_amplitud')
+    else:
+    	g.render('arbol_primero_profundidad')
+	
 
-# Luego de generar la lista de camino con primeroAnchura(maze)...
 
-
-    
-def primeroAnchura(maze):
+def primeroAmplitud(maze):
 	
 	nodoI=nodo(9,9)
 	nodoF = nodo(0,0)
@@ -66,17 +85,8 @@ def primeroAnchura(maze):
 					nodoAux=camino(nodoA,e)
 					listaCamino.append(nodoAux)
 		
-		# Crear un grafo vacío
-	
-	generar_arbol_jerarquico(listaCamino)
+	generar_arbol_jerarquico(listaCamino,1)
 
-
-
-		
-
-	
-
-	
 
 def obtenerCamino(maze,n):
 	listaCamino=[]
@@ -100,42 +110,6 @@ def obtenerCamino(maze,n):
 			listaCamino.append(nodo(px+1,py))
 			
 	return listaCamino
-
-
-"""
-def obtenerCamino(maze,n):
-	listaCamino=[]
-	px=n.posX
-	py=n.posY
-	print("aca esta la px",px)
-	print('inicio',px,py)
-	if(px+1<10 and py<10 and py>=0):
-		if maze[px+1][py]=='0':
-			guardarPos(px,py,px+1,py,listaCamino)
-			print('abajo',px+1,py)
-
-	if(px-1>0 and py<10 and py>=0):
-		if maze[px-1][py]=='0':
-			guardarPos(px,py,px-1,py,listaCamino)
-			print('arriba',px-1,py)
-
-	if(py+1<10 and px<10 and px>=0):
-		if maze[px][py+1]=='0':
-			guardarPos(px,py,px,py+1,listaCamino)
-			print('der',px,py+1)
-			
-	if(py-1>=0 and px<10 and px>=0):
-		if maze[px][py-1]=='0':
-			guardarPos(px,py,px,py-1,listaCamino)
-			print('izq',px,py-1)
-	return listaCamino
-		
-def guardarPos(pospX,pospY,poshX,poshY,listaCamino):
-	posicionP = nodo(pospX, pospY)
-	posicionH = nodo(poshX, poshY)
-	nodoP = camino(posicionP,posicionH)
-	listaCamino.append(nodoP)
-"""
 
 
 
@@ -418,55 +392,7 @@ maze[9][8] = cell
 
 # Print final maze
 printMaze(maze)
+##Aca se llaman a los algoritmos
 
-primeroAnchura(maze)
-
-
-
-## izquierda:-1 ,derecha: +1, arriba: -1,abajo +1
-
-
-
-
-
-			
-"""
-	while (i>0):
-		while (j>0):
-			if(maze[i][j]=='0' or maze[i][j]== 'F' or maze[i][j]== 'I'):
-				
-				print(i,j)
-				posicion = (buscar_posiciones(maze,i,j)) 
-				print(posicion)
-				if([i,j] in grafo):
-
-					i=i+1
-					break
-				else:
-					if('arr' in posicion ):
-						i=i-1
-						camino.append([i,j])
-					
-					else:
-						if('izq' in posicion):
-							j=j-1
-							camino.append([i,j])
-							break
-						if('der' in posicion):
-							j=j+1
-							camino.append([i,j])
-							break
-						if('abj' in posicion):
-							grafo=camino
-							print("la concha de tu madre")
-							print(grafo)
-							i=i+1
-							break
-						
-			else:
-				j=j-1			
-"""
-
-
-
-
+primeroAmplitud(maze)
+primeroProfundidad(maze)
