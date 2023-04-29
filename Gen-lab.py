@@ -92,7 +92,7 @@ def obtenerCamino(maze,n):
 	listaCamino=[]
 	px=n.posX
 	py=n.posY
-	
+
 	if(py+1<10 and px<10 and px>=0):
 		if maze[px][py+1]=='0' or maze[px][py+1]=='F' :
 			listaCamino.append(nodo(px,py+1))
