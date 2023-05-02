@@ -316,6 +316,20 @@ def buscar_posiciones(maze,i,j):
 	return posiciones
 
 ## Procedimiento para generar busqueda de camino primero en profundidad
+def EliminaDuplicado (listaCola):
+	listaNoDuplicados = []
+    # Crear un conjunto para hacer un seguimiento de los elementos ya procesados
+	elementosProcesados = set()
+    
+    # Recorrer la lista original y agregar los elementos no duplicados a la nueva lista
+	for e in listaCola:
+		if e.nodoH not in elementosProcesados:
+			listaNoDuplicados.append(e)
+			elementosProcesados.add(e.nodoH)
+    
+    # Devolver la nueva lista sin elementos duplicados
+	return listaNoDuplicados
+
 
 def primeroProfundidad(maze):
 	nodoI = nodo(9,9)
@@ -323,86 +337,54 @@ def primeroProfundidad(maze):
 	listaCamino=[]
 	listaVisitados = set()
 	listaCola = []
-	listaCola.append(nodoI)
+	listaCola.append(camino(nodoI, nodoI))
+	cont = 0
 	while listaCola:
-			nodoA=listaCola.pop(0)
-			if(nodoA not in listaVisitados):
-				listaVisitados.add(nodoA)
-				if nodoA == nodoF:
-					generar_arbol_jerarquico(listaCamino,2)
-					for e in listaCamino:
-						print("NodoPadre:",e.nodoP.posX,e.nodoP.posY,"NodoHijo:",e.nodoH.posX,e.nodoH.posY)
-					return None
-				
-				listaVecino=obtenerCamino(maze,nodoA)
-				pos = 0
-				for v in listaVecino:
-					if v not in listaVisitados:
-						nodo_padre = nodoA
-						nodo_hijo = v
-						if(pos == 0):
-							listaCamino.append(camino(nodo_padre, nodo_hijo))
-						listaCola.insert(pos,v)
-						pos=pos+1
 
-"""def primeroProfundidad(maze):
-    nodoI = nodo(9,9)
-    nodoF = nodo(0,0)
-    listaCamino = []
-    listaVisitados = set()
-    listaPila = []
-    listaPila.append(nodoI)
-    while listaPila:
-        nodoA = listaPila.pop()
-        if nodoA not in listaVisitados:
-            listaVisitados.add(nodoA)
-            if nodoA == nodoF:
-                generar_arbol_jerarquico(listaCamino, 2)
-                for e in listaCamino:
-                    print("NodoPadre:",e.nodoP.posX,e.nodoP.posY,"NodoHijo:",e.nodoH.posX,e.nodoH.posY)
-                return None
-            listaVecino = obtenerCamino(maze, nodoA)
-            for v in listaVecino:
-                if v not in listaVisitados:
-                    nodo_padre = nodoA
-                    nodo_hijo = v
-                    listaCamino.append(camino(nodo_padre, nodo_hijo))
-                    listaPila.append(nodo_hijo)"""
-   
-    
+		caminoAux=listaCola.pop(0)
+		listaCola=EliminaDuplicado(listaCola)
+		nodoA=caminoAux.nodoH
+		
+		if(nodoA not in listaVisitados):
+			if(cont!=0):
+				listaCamino.append(caminoAux)
 			
-"""def primeroProfundidadRecursivo(maze, nodoA, nodoF, listaVisitados=set(), listaCamino=[],profundidad=0, max_profundidad=500):
+			listaVisitados.add(nodoA)
+			
+			if nodoA == nodoF:
+				generar_arbol_jerarquico(listaCamino,listaCola,2)
+				for e in listaCamino:
+					print("NodoPadre:",e.nodoP.posX,e.nodoP.posY,"NodoHijo:",e.nodoH.posX,e.nodoH.posY)
+				for e in listaCola:
+					print("NodoPadre1:",e.nodoP.posX,e.nodoP.posY,"NodoHijo1:",e.nodoH.posX,e.nodoH.posY)
+				return None
+			
+			listaVecino=obtenerCamino(maze,nodoA)
+			pos = 0
+			for nodo_hijo in listaVecino:
+				if nodo_hijo not in listaVisitados:
+						
+					listaCola.insert(pos,camino(nodoA, nodo_hijo))
+					pos=pos+1
+					
+		cont = cont+1
 
-    if nodoA == nodoF:
-    
-        generar_arbol_jerarquico(listaCamino, 2)
-        return None
-
-    if profundidad >= max_profundidad:
-        return None
-    listaVisitados.add(nodoA)
-
-    listaVecino = obtenerCamino(maze, nodoA)
-
-    for v in listaVecino:
-        if (v.posX, v.posY) not in listaVisitados:
-            nodo_hijo = nodo(v.posX, v.posY)
-            listaCamino.append(camino(nodoA, nodo_hijo))
-            primeroProfundidadRecursivo(maze, nodo_hijo, nodoF, listaVisitados, listaCamino,profundidad+1, max_profundidad)
-
-    return listaCamino"""
 
 
 
 
 # Procedimiento para generar grafico del arbol
-def generar_arbol_jerarquico(listacamino,i):
+def generar_arbol_jerarquico(listacamino,listaCola,i):
 	g = Graph(engine='sfdp')
 	g = graphviz.Digraph(format='png')
 	for cam in listacamino:
 		nodo_padre = (cam.nodoP.posX,cam.nodoP.posY)
 		nodo_hijo = (cam.nodoH.posX,cam.nodoH.posY)
 		g.edge(str(nodo_padre), str(nodo_hijo))
+	for cam in listaCola:
+		nodo_padre = (cam.nodoP.posX,cam.nodoP.posY)
+		nodo_hijo = (cam.nodoH.posX,cam.nodoH.posY)
+		g.edge(str(nodo_padre), str(nodo_hijo),style='dashed', color='blue')
 	if(i==1):
 		g.render('arbol_primero_amplitud')
 	else:
@@ -413,26 +395,42 @@ def generar_arbol_jerarquico(listacamino,i):
 
    
 ##Procedimiento para generar busqueda de camino primero en amplitud    
-def primeroAmplitud(maze,tiempo):
-	inicio = time.time()
+def primeroAmplitud(maze):
 	nodoI=nodo(9,9)
 	nodoF = nodo(0,0)
 	listaCamino=[]
 	listaVisitados = set()
 	listaCola = []
-	listaCola.append(nodoI)
-	 
+	listaCola.append(camino(nodoI, nodoI))
+	nodoP = nodoI
+	cont = 0
 	while listaCola:
-		nodoA=listaCola.pop(0)
+		caminoAux=listaCola.pop(0)
+		listaCola=EliminaDuplicado(listaCola)
+		nodoA=caminoAux.nodoH
 		if(nodoA not in listaVisitados):
+
+			
 			listaVecino = []
+			if(cont!=0):
+				listaCamino.append(caminoAux)
+			
+			if nodoA == nodoF:
+				generar_arbol_jerarquico(listaCamino,listaCola,1)
+				
+				for e in listaCamino:
+					print("NodoPadre:",e.nodoP.posX,e.nodoP.posY,"NodoHijo:",e.nodoH.posX,e.nodoH.posY)
+				for e in listaCola:
+					print("NodoPadre1:",e.nodoP.posX,e.nodoP.posY,"NodoHijo1:",e.nodoH.posX,e.nodoH.posY)
+				return None
+			
+					
 			listaVisitados.add(nodoA)
 			listaVecino=obtenerCamino(maze,nodoA)
-			for e in listaVecino:
-				if(e not in listaVisitados):
-					listaCola.append(e)
-					nodoAux=camino(nodoA,e)
-					listaCamino.append(nodoAux)
-	fin = time.time()
-	tiempo = fin - inicio
-	generar_arbol_jerarquico(listaCamino,1)
+			
+			for nodo_hijo in listaVecino:
+				if(nodo_hijo not in listaVisitados):
+					listaCola.append(camino(nodoA, nodo_hijo))
+
+		cont=cont+1				
+	
