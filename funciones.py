@@ -1,14 +1,12 @@
 import graphviz
 from graphviz import Graph
-from PIL import Image
 from clases import nodo 
 from clases import camino
 import random
-import time
 import numpy as np
 from colorama import init
 from colorama import Fore, Back, Style
-	
+from PIL import Image
 ##Funciones extraidas del archivo Gen-lab.py
 #Procedimiento que imprime matriz sin grafica
 def printMaze(maze,height,width):
@@ -348,7 +346,7 @@ def primeroProfundidad(maze):
 		if(nodoA not in listaVisitados):
 			if(cont!=0):
 				listaCamino.append(caminoAux)
-			
+
 			listaVisitados.add(nodoA)
 			
 			if nodoA == nodoF:
@@ -395,10 +393,9 @@ def generar_arbol_jerarquico(listacamino,listaCola,i):
 
    
 ##Procedimiento para generar busqueda de camino primero en amplitud    
-def primeroAmplitud(maze):
+def primeroAmplitud(maze,listaCamino):
 	nodoI=nodo(9,9)
 	nodoF = nodo(0,0)
-	listaCamino=[]
 	listaVisitados = set()
 	listaCola = []
 	listaCola.append(camino(nodoI, nodoI))
@@ -434,3 +431,33 @@ def primeroAmplitud(maze):
 
 		cont=cont+1				
 	
+def generarLab(laberinto):
+    # Abrir imágenes
+    pared = Image.open("pared.png")
+    camino = Image.open("camino.png")
+ 
+    # Tamaño de la imagen
+    ancho = len(laberinto[0])
+    alto = len(laberinto)
+    imagen = Image.new("RGB", (ancho*50, alto*50), "white")
+
+    # Pegar imágenes
+    for fila in range(alto):
+        for columna in range(ancho):
+            if laberinto[fila][columna] == '0':
+                img = camino
+            elif laberinto[fila][columna] == 'x':
+                img = pared
+            elif laberinto[fila][columna] == 'I':
+                img = camino
+            elif laberinto[fila][columna] == 'F':
+                img = camino
+            else:
+                continue
+
+            img = img.resize((50, 50), Image.ANTIALIAS)
+            imagen.paste(img, (columna*50, fila*50))
+
+    # Mostrar imagen
+    # Guardar imagen
+    imagen.save("laberinto.png")
