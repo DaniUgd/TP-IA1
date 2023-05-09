@@ -379,12 +379,12 @@ def generar_arbol_jerarquico(listacamino,listaCola,i):
 	g = graphviz.Digraph(format='png')
 	for cam in listacamino:
 		nodo_padre = (cam.nodoP.posX,cam.nodoP.posY)
-		nodo_hijo = (cam.nodoH.posX,cam.nodoH.posY)
+		nodo_hijo = (cam.nodoH.posX,cam.nodoH.posY) 
 		g.edge(str(nodo_padre), str(nodo_hijo))
 	for cam in listaCola:
 		nodo_padre = (cam.nodoP.posX,cam.nodoP.posY)
 		nodo_hijo = (cam.nodoH.posX,cam.nodoH.posY)
-		g.edge(str(nodo_padre), str(nodo_hijo),style='dashed', color='blue')
+		g.edge(str(nodo_padre), str(nodo_hijo), style='dashed', color='blue')
 	if(i==1):
 		g.render('arbol_primero_amplitud')
 	else:
