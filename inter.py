@@ -9,7 +9,7 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-
+from funciones import listaCamino 
 
 class Ui_Form(object):
     def setupUi(self, Form):
@@ -40,7 +40,7 @@ class Ui_Form(object):
         # Agregar los valores de la lista a la tabla
         for i in range(N):
             item = QtWidgets.QTableWidgetItem(str(listaCamino[i]))
-            table_widget.setItem(i, 0, item)
+            self.table_widget.setItem(i, 0, item)
 
         # Agregar encabezados
         header_item = QtWidgets.QTableWidgetItem("Lista de Camino")
