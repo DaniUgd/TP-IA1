@@ -5,11 +5,13 @@ from PyQt5.QtWidgets import QApplication, QMainWindow
 from PyQt5 import QtWidgets
 from VentanaPP import Ventana_PP
 from MenuPrincipal import VentanaMenuPrincipal
-
+from VentanaPA import Ventana_PA
 maze = [] 
 nodoI = nodo(9, 9)
 nodoF = nodo(0, 0)
-listaCamino = []
+listaCaminoPA = []
+listaCaminoPP = []
+
 listaVisitados = set()
 
 
@@ -17,9 +19,9 @@ listaVisitados = set()
 maze = funciones.gen_lab()
 
 funciones.printMaze(maze,10,10)
-funciones.primeroAmplitud(maze,listaCamino)
-funciones.primeroProfundidad(maze)
-##funciones.primeroProfundidadRecursivo(maze, nodoI, nodoF, listaVisitados, listaCamino)
+funciones.primeroAmplitud(maze,listaCaminoPA)
+funciones.primeroProfundidad(maze,listaCaminoPP)
+
 
 funciones.generarLab(maze)
 
@@ -29,20 +31,31 @@ class MenuPrincipal(QMainWindow):
         # Crear una instancia de la interfaz de usuario
         self.ui = VentanaMenuPrincipal()
         self.ui.setupUi(self)
-        self.ui.btn_pp.clicked.connect(self.abrirNuevaVentana)
+        self.ui.btn_pp.clicked.connect(self.abrirNuevaVentanaPP)
+        self.ui.btn_pa.clicked.connect(self.abrirNuevaVentanaPA)
     
-    def abrirNuevaVentana(self):
+    def abrirNuevaVentanaPP(self):
         
-        self.Ventana_P = VentanaPP()
-        self.Ventana_P.show()
-        
+        self.Ventana_PP = VentanaPP()
+        self.Ventana_PP.show()
+
+    def abrirNuevaVentanaPA(self):
+        self.Ventana_PA = VentanaPA()
+        self.Ventana_PA.show()        
         
 class VentanaPP(QMainWindow):
     def __init__(self):
         super().__init__()
         # Crear una instancia de la interfaz de usuario
         self.ui = Ventana_PP()
-        self.ui.setupUi(self,listaCamino)
+        self.ui.setupUi(self,listaCaminoPP)
+
+class VentanaPA(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        # Crear una instancia de la interfaz de usuario
+        self.ui = Ventana_PA()
+        self.ui.setupUi(self,listaCaminoPA)
 
         
 if __name__ == "__main__":

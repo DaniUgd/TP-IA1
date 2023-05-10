@@ -329,10 +329,9 @@ def EliminaDuplicado (listaCola):
 	return listaNoDuplicados
 
 
-def primeroProfundidad(maze):
+def primeroProfundidad(maze,listaCamino):
 	nodoI = nodo(9,9)
 	nodoF = nodo(0,0)
-	listaCamino=[]
 	listaVisitados = set()
 	listaCola = []
 	listaCola.append(camino(nodoI, nodoI))
@@ -350,7 +349,8 @@ def primeroProfundidad(maze):
 			listaVisitados.add(nodoA)
 			
 			if nodoA == nodoF:
-				generar_arbol_jerarquico(listaCamino,listaCola,2)
+				listaCaminoS=caminoSolucion(listaCamino)
+				generar_arbol_jerarquico(listaCamino,listaCola,2,listaCaminoS)
 				for e in listaCamino:
 					print("NodoPadre:",e.nodoP.posX,e.nodoP.posY,"NodoHijo:",e.nodoH.posX,e.nodoH.posY)
 				for e in listaCola:
@@ -361,7 +361,7 @@ def primeroProfundidad(maze):
 			pos = 0
 			for nodo_hijo in listaVecino:
 				if nodo_hijo not in listaVisitados:
-						
+				
 					listaCola.insert(pos,camino(nodoA, nodo_hijo))
 					pos=pos+1
 					
@@ -372,20 +372,29 @@ def primeroProfundidad(maze):
 
 
 # Procedimiento para generar grafico del arbol
-def generar_arbol_jerarquico(listacamino,listaCola,i):
+def generar_arbol_jerarquico(listacamino,listaCola,i,caminoS):
 	g = Graph(engine='sfdp')
 	g = graphviz.Digraph(format='png')
+	h = Graph(engine='sfdp')
+	h = graphviz.Digraph(format='png')
 	for cam in listacamino:
 		nodo_padre = (cam.nodoP.posX,cam.nodoP.posY)
 		nodo_hijo = (cam.nodoH.posX,cam.nodoH.posY) 
-		g.edge(str(nodo_padre), str(nodo_hijo))
-	for cam in listaCola:
-		nodo_padre = (cam.nodoP.posX,cam.nodoP.posY)
-		nodo_hijo = (cam.nodoH.posX,cam.nodoH.posY)
-		g.edge(str(nodo_padre), str(nodo_hijo), style='dashed', color='blue')
-	if(i==1):
+		if(cam not in caminoS):
+			g.edge(str(nodo_padre), str(nodo_hijo))
+		else:
+			g.node(str(nodo_padre),style="filled", fillcolor='green')
+			g.node(str(nodo_hijo),style="filled", fillcolor='green')
+			g.edge(str(nodo_padre),str(nodo_hijo))
+
+	if(i<=2):
+		for cam in listaCola:
+			nodo_padre = (cam.nodoP.posX,cam.nodoP.posY)
+			nodo_hijo = (cam.nodoH.posX,cam.nodoH.posY)
+			g.edge(str(nodo_padre), str(nodo_hijo), style='dashed', color='blue')
+	if (i==1):
 		g.render('arbol_primero_amplitud')
-	else:
+	elif (i==2):
 		g.render('arbol_primero_profundidad')
 
 
@@ -413,8 +422,9 @@ def primeroAmplitud(maze,listaCamino):
 				listaCamino.append(caminoAux)
 			
 			if nodoA == nodoF:
-				generar_arbol_jerarquico(listaCamino,listaCola,1)
 				
+				listaCaminoS=caminoSolucion(listaCamino)
+				generar_arbol_jerarquico(listaCamino,listaCola,1,listaCaminoS)
 				for e in listaCamino:
 					print("NodoPadre:",e.nodoP.posX,e.nodoP.posY,"NodoHijo:",e.nodoH.posX,e.nodoH.posY)
 				for e in listaCola:
@@ -461,3 +471,21 @@ def generarLab(laberinto):
     # Mostrar imagen
     # Guardar imagen
     imagen.save("laberinto.png")
+    
+
+def caminoSolucion(listaCamino):
+	caminoS = []
+	
+	aux=nodo(0,0)
+	pos=0
+	for c in reversed(listaCamino):
+		if((aux.posX==c.nodoH.posX and aux.posY==c.nodoH.posY)or(pos==0)):
+			aux = c.nodoP
+			caminoS.append(c)
+			pos=1
+	caminoS.reverse()
+
+	return caminoS
+		
+
+	    
