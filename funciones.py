@@ -1,3 +1,5 @@
+import sys
+
 import graphviz
 from graphviz import Graph
 from clases import nodo 
@@ -7,9 +9,17 @@ import numpy as np
 from colorama import init
 from colorama import Fore, Back, Style
 from PIL import Image
+from PyQt5.QtWidgets import QApplication, QMainWindow,QMessageBox
+from VentanaPP import Ventana_PP
+from MenuPrincipal import Ui_MainWindow
+from VentanaPA import Ventana_PA
+from PyQt5.QtCore import QRegExp
+from PyQt5.QtGui import QRegExpValidator
 ##Funciones extraidas del archivo Gen-lab.py
+
 #Procedimiento que imprime matriz sin grafica
 def printMaze(maze,height,width):
+	tam = int(height)
 	for i in range(0, height):
 		for j in range(0, width):
 			if (maze[i][j] == 'u'):
@@ -18,7 +28,7 @@ def printMaze(maze,height,width):
 				print(Fore.GREEN + str(maze[i][j]), end=" ")
 			elif(i==0 and j == 0):
 				print(Fore.BLUE + str(maze[i][j]), end=" ")	
-			elif(i==9 and j == 9):
+			elif(i==tam-1 and j == tam-1):
 				print(Fore.BLUE + str(maze[i][j]), end=" ")	
 			else:
 				print(Fore.RED + str(maze[i][j]), end=" ")
@@ -39,21 +49,20 @@ def surroundingCells(maze,rand_wall):
 
 	return s_cells
 
-def gen_lab():
+def gen_lab(tam):
 	## Main code
 	# Init variables
 	wall = 'x'
 	cell = '0'
 	unvisited = 'u'
-	height = 10
-	width = 10
+	height = int(tam)
+	width = int(tam)
 	maze = []
 	entrada = 'I'
 	salida = 'F'
 
 	# Initialize colorama
 	init()
-
 	# Denote all cells as unvisited
 	for i in range(0, height):
 		line = []
@@ -62,8 +71,8 @@ def gen_lab():
 		maze.append(line)
 
 	# Randomize starting point and set it a cell
-	starting_height = int(9)
-	starting_width = int(9)
+	starting_height = int(tam)-1
+	starting_width = int(tam)-1
 	if (starting_height == 0):
 		starting_height += 1
 	if (starting_height == height-1):
@@ -260,60 +269,117 @@ def gen_lab():
 		if (maze[height-2][i] == '0'):
 			maze[height-1][i] = '0'
 			break
-	al = random.randint(2,7)
+	al = random.randint(2,width-3)
 	for i in range(1,al):
 		maze[al][i] = cell
 
 	maze[0][0] = salida
-	maze[9][9] = entrada
+	maze[width-1][width-1] = entrada
 	maze[0][1] = cell
-	maze[9][8] = cell
+	maze[width - 1][width - 2] = cell
 
 	return maze    
+#Fin Generador de matriz del laberinto
+
+##Procedimiento para generar busqueda de camino primero en amplitud    
+def primeroAmplitud(maze,listaCamino):
+	num_filas = int(len(maze)) - 1
+	nodoI=nodo(num_filas,num_filas)
+	nodoF = nodo(0,0)
+	listaVisitados = set()
+	listaCola = []
+	listaCola.append(camino(nodoI, nodoI))
+	nodoP = nodoI
+	cont = 0
+	while listaCola:
+		listaCola=EliminaDuplicado(listaCola)
+		caminoAux=listaCola.pop(0)
+		nodoA=caminoAux.nodoH
+		if(nodoA not in listaVisitados):
+
+			listaVecino = []
+			if(cont!=0):
+				listaCamino.append(caminoAux)
+			
+			if nodoA == nodoF:
+				
+				listaCaminoS=caminoSolucion(listaCamino)
+				generar_arbol_jerarquico(listaCamino,listaCola,1,listaCaminoS)
+				return None
+			
+					
+			listaVisitados.add(nodoA)
+			listaVecino=obtenerCamino(maze,nodoA)
+			
+			for nodo_hijo in listaVecino:
+				if(nodo_hijo not in listaVisitados):
+					listaCola.append(camino(nodoA, nodo_hijo))
+
+		cont=cont+1		
+#Fin Algoritmo Primero en Amplitud
+
+#Procedimiento para generar busqueda de camino primero en Profundidad    
+def primeroProfundidad(maze,listaCamino):
+	num_filas = int(len(maze)) - 1
+	nodoI = nodo(num_filas,num_filas)
+	nodoF = nodo(0,0)
+	listaVisitados = set()
+	listaCola = []
+	listaCola.append(camino(nodoI, nodoI))
+	cont = 0
+	while listaCola:
+		listaCola=EliminaDuplicado(listaCola)
+		caminoAux=listaCola.pop(0)
+		nodoA=caminoAux.nodoH
+		
+		if(nodoA not in listaVisitados):
+			if(cont!=0):
+				listaCamino.append(caminoAux)
+
+			listaVisitados.add(nodoA)
+			
+			if nodoA == nodoF:
+				listaCaminoS=caminoSolucion(listaCamino)
+				generar_arbol_jerarquico(listaCamino,listaCola,2,listaCaminoS)
+				return None
+			
+			listaVecino=obtenerCamino(maze,nodoA)
+			pos = 0
+			for nodo_hijo in listaVecino:
+				if nodo_hijo not in listaVisitados:
+				
+					listaCola.insert(pos,camino(nodoA, nodo_hijo))
+					pos=pos+1
+		cont = cont+1
+
+#Fin Algoritmo Primero en Profundidad
 
 #Funcion para obtener caminos posibles en la matriz, la misma devuelve una lista de los posbibles
 def obtenerCamino(maze,n):
 	listaCamino=[]
+	tamM = int(len(maze))
 	px=n.posX
 	py=n.posY
 	##Sentido Anti Horario
-	if(px-1>=0 and py<10 and py>=0):
+	if(px-1>=0 and py<tamM and py>=0):
 		if maze[px-1][py]=='0' or maze[px-1][py]=='F':
 			listaCamino.append(nodo(px-1,py))	
 
-	if(py-1>=0 and px<10 and px>=0):
+	if(py-1>=0 and px<tamM and px>=0):
 		if maze[px][py-1]=='0' or maze[px][py-1]=='F':
 			listaCamino.append(nodo(px,py-1))
-	if(px+1<10 and py<10 and py>=0):
+	if(px+1<tamM and py<tamM and py>=0):
 		if maze[px+1][py]=='0' or maze[px+1][py]=='F':
 			listaCamino.append(nodo(px+1,py))	
 	
-	if(py+1<10 and px<10 and px>=0):
+	if(py+1<tamM and px<tamM and px>=0):
 		if maze[px][py+1]=='0' or maze[px][py+1]=='F' :
 			listaCamino.append(nodo(px,py+1))
-			
-	
-			
+		
 	return listaCamino
+#Fin Funcion para obtener caminos posibles
 
-
-#Procedimiento no utilizada 
-def buscar_posiciones(maze,i,j):
-	posiciones = []
-
-	if (maze[i][j-1]=='0' ):
-			posiciones.append('izq')
-			
-	if (j<9 and maze[i][j+1]=='0' ):
-			posiciones.append('der')
-	
-	if (maze[i-1][j]=='0'  ):
-			posiciones.append('arr')
-	if (i<9 and maze[i+1][j]=='0' ):
-			posiciones.append('abj')
-	return posiciones
-
-## Procedimiento para generar busqueda de camino primero en profundidad
+#Funcion que controla si existen nodos duplicado en listaCola
 def EliminaDuplicado (listaCola):
 	listaNoDuplicados = []
     # Crear un conjunto para hacer un seguimiento de los elementos ya procesados
@@ -327,49 +393,24 @@ def EliminaDuplicado (listaCola):
     
     # Devolver la nueva lista sin elementos duplicados
 	return listaNoDuplicados
+#Fin Funcion
 
+#Funcion para obtener el camino Solucion
+def caminoSolucion(listaCamino):
+	caminoS = []
+	
+	aux=nodo(0,0)
+	pos=0
+	for c in reversed(listaCamino):
+		if((aux.posX==c.nodoH.posX and aux.posY==c.nodoH.posY)or(pos==0)):
+			aux = c.nodoP
+			caminoS.append(c)
+			pos=1
+	caminoS.reverse()
 
-def primeroProfundidad(maze,listaCamino):
-	nodoI = nodo(9,9)
-	nodoF = nodo(0,0)
-	listaVisitados = set()
-	listaCola = []
-	listaCola.append(camino(nodoI, nodoI))
-	cont = 0
-	while listaCola:
-
-		caminoAux=listaCola.pop(0)
-		listaCola=EliminaDuplicado(listaCola)
-		nodoA=caminoAux.nodoH
-		
-		if(nodoA not in listaVisitados):
-			if(cont!=0):
-				listaCamino.append(caminoAux)
-
-			listaVisitados.add(nodoA)
-			
-			if nodoA == nodoF:
-				listaCaminoS=caminoSolucion(listaCamino)
-				generar_arbol_jerarquico(listaCamino,listaCola,2,listaCaminoS)
-				for e in listaCamino:
-					print("NodoPadre:",e.nodoP.posX,e.nodoP.posY,"NodoHijo:",e.nodoH.posX,e.nodoH.posY)
-				for e in listaCola:
-					print("NodoPadre1:",e.nodoP.posX,e.nodoP.posY,"NodoHijo1:",e.nodoH.posX,e.nodoH.posY)
-				return None
-			
-			listaVecino=obtenerCamino(maze,nodoA)
-			pos = 0
-			for nodo_hijo in listaVecino:
-				if nodo_hijo not in listaVisitados:
-				
-					listaCola.insert(pos,camino(nodoA, nodo_hijo))
-					pos=pos+1
-					
-		cont = cont+1
-
-
-
-
+	return caminoS
+	
+#Fin Funcion
 
 # Procedimiento para generar grafico del arbol
 def generar_arbol_jerarquico(listacamino,listaCola,i,caminoS):
@@ -386,61 +427,19 @@ def generar_arbol_jerarquico(listacamino,listaCola,i,caminoS):
 			g.node(str(nodo_padre),style="filled", fillcolor='green')
 			g.node(str(nodo_hijo),style="filled", fillcolor='green')
 			g.edge(str(nodo_padre),str(nodo_hijo))
-
 	if(i<=2):
 		for cam in listaCola:
 			nodo_padre = (cam.nodoP.posX,cam.nodoP.posY)
 			nodo_hijo = (cam.nodoH.posX,cam.nodoH.posY)
+			g.node(str(nodo_hijo),style="filled", fillcolor='blue')
 			g.edge(str(nodo_padre), str(nodo_hijo), style='dashed', color='blue')
 	if (i==1):
 		g.render('arbol_primero_amplitud')
 	elif (i==2):
 		g.render('arbol_primero_profundidad')
-
-
-
-
-   
-##Procedimiento para generar busqueda de camino primero en amplitud    
-def primeroAmplitud(maze,listaCamino):
-	nodoI=nodo(9,9)
-	nodoF = nodo(0,0)
-	listaVisitados = set()
-	listaCola = []
-	listaCola.append(camino(nodoI, nodoI))
-	nodoP = nodoI
-	cont = 0
-	while listaCola:
-		caminoAux=listaCola.pop(0)
-		listaCola=EliminaDuplicado(listaCola)
-		nodoA=caminoAux.nodoH
-		if(nodoA not in listaVisitados):
-
-			
-			listaVecino = []
-			if(cont!=0):
-				listaCamino.append(caminoAux)
-			
-			if nodoA == nodoF:
-				
-				listaCaminoS=caminoSolucion(listaCamino)
-				generar_arbol_jerarquico(listaCamino,listaCola,1,listaCaminoS)
-				for e in listaCamino:
-					print("NodoPadre:",e.nodoP.posX,e.nodoP.posY,"NodoHijo:",e.nodoH.posX,e.nodoH.posY)
-				for e in listaCola:
-					print("NodoPadre1:",e.nodoP.posX,e.nodoP.posY,"NodoHijo1:",e.nodoH.posX,e.nodoH.posY)
-				return None
-			
-					
-			listaVisitados.add(nodoA)
-			listaVecino=obtenerCamino(maze,nodoA)
-			
-			for nodo_hijo in listaVecino:
-				if(nodo_hijo not in listaVisitados):
-					listaCola.append(camino(nodoA, nodo_hijo))
-
-		cont=cont+1				
-	
+#Fin Procedimiento
+		
+#Procedimiento para generar la imagen de laberinto
 def generarLab(laberinto):
     # Abrir imágenes
     pared = Image.open("pared.png")
@@ -468,24 +467,63 @@ def generarLab(laberinto):
             img = img.resize((50, 50), Image.ANTIALIAS)
             imagen.paste(img, (columna*50, fila*50))
 
-    # Mostrar imagen
+   
     # Guardar imagen
     imagen.save("laberinto.png")
-    
 
-def caminoSolucion(listaCamino):
-	caminoS = []
-	
-	aux=nodo(0,0)
-	pos=0
-	for c in reversed(listaCamino):
-		if((aux.posX==c.nodoH.posX and aux.posY==c.nodoH.posY)or(pos==0)):
-			aux = c.nodoP
-			caminoS.append(c)
-			pos=1
-	caminoS.reverse()
+#Fin Procedimiento
 
-	return caminoS
-		
 
-	    
+#Clases y funciones de intefaz
+class MenuPrincipal(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.ui = Ui_MainWindow()
+        self.ui.setupUi(self)
+        self.ui.btn_pp.clicked.connect(self.abrirNuevaVentanaPP)
+        self.ui.btn_pa.clicked.connect(self.abrirNuevaVentanaPA)
+        self.ui.btn_reload.clicked.connect(self.regenerarLaberinto)
+        validator = QRegExpValidator(QRegExp("^(?:[5-9]|[1-9][0-9]|100)$"), self.ui.tam_lab)
+        self.ui.tam_lab.setValidator(validator)
+    ##Procedimiento para Recargar el laberinto y sus algoritmos
+    def regenerarLaberinto(self):
+        tam = self.ui.obtenerTamMatriz()
+        fila = int(tam)
+        if(fila > 4 and fila <101 ):
+            global maze, listaCaminoPA, listaCaminoPP  # Agregar "global" para modificar las variables globales
+            maze = []
+            listaCaminoPA = []
+            listaCaminoPP = []
+            maze = gen_lab(fila)
+            print("Este es el tamaño de la matriz", len(maze))
+            primeroAmplitud(maze, listaCaminoPA)
+            primeroProfundidad(maze, listaCaminoPP)
+            generarLab(maze)
+            self.ui.recargarLaberinto()
+        else:
+            QMessageBox.information(None, "Mensaje", "Solo se acepta numeros entre el 5 y el 100.")
+       #Fin Procedimiento
+
+    #Procedimiento Para el funcionamiento de los botones    
+    def abrirNuevaVentanaPP(self):
+        self.ventana_pp = VentanaPP()
+        self.ventana_pp.show()
+
+    def abrirNuevaVentanaPA(self):
+        self.ventana_pp = VentanaPA()
+        self.ventana_pp.show()
+    #Fin procedimiento
+
+#Clases Para el funcionamiento de las interfaces    
+class VentanaPP(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.ui = Ventana_PP()
+        self.ui.setupUi(self, listaCaminoPP)
+
+class VentanaPA(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.ui = Ventana_PA()
+        self.ui.setupUi(self, listaCaminoPA)
+#Fin De las clases
