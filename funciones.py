@@ -495,7 +495,6 @@ class MenuPrincipal(QMainWindow):
             listaCaminoPA = []
             listaCaminoPP = []
             maze = gen_lab(fila)
-            print("Este es el tamaño de la matriz", len(maze))
             primeroAmplitud(maze, listaCaminoPA)
             primeroProfundidad(maze, listaCaminoPP)
             generarLab(maze)
