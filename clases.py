@@ -18,9 +18,21 @@ class nodo :
             print(nodo.__str__())
  
 class camino : 
-
     def __init__(self, nodoP,nodoH):
         self.nodoP = nodoP
         self.nodoH = nodoH
+
+class nodoPOS :
+
+    def __init__(self,posX,posY,pos):
+        self.posX = posX
+        self.posY = posY
+        self.pos = pos
+    ##funciones para comparar dos objetos de la misma clase
+    def __eq__(self, other):
+        if isinstance(other, nodoPOS):
+            return self.posX == other.posX and self.posY == other.posY and self.pos == other.pos
+        return False
+   
         
 

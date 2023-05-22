@@ -13,6 +13,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow,QMessageBox
 from VentanaPP import Ventana_PP
 from MenuPrincipal import Ui_MainWindow
 from VentanaPA import Ventana_PA
+from VentanaCompara import Ventana_Compara
 from PyQt5.QtCore import QRegExp
 from PyQt5.QtGui import QRegExpValidator
 ##Funciones extraidas del archivo Gen-lab.py
@@ -282,12 +283,13 @@ def gen_lab(tam):
 #Fin Generador de matriz del laberinto
 
 ##Procedimiento para generar busqueda de camino primero en amplitud    
-def primeroAmplitud(maze,listaCamino):
+def primeroAmplitud(maze,flag):
+	listaCamino =[]
+	listaCola = []
 	num_filas = int(len(maze)) - 1
 	nodoI=nodo(num_filas,num_filas)
 	nodoF = nodo(0,0)
 	listaVisitados = set()
-	listaCola = []
 	listaCola.append(camino(nodoI, nodoI))
 	nodoP = nodoI
 	cont = 0
@@ -302,10 +304,11 @@ def primeroAmplitud(maze,listaCamino):
 				listaCamino.append(caminoAux)
 			
 			if nodoA == nodoF:
-				
-				listaCaminoS=caminoSolucion(listaCamino)
-				generar_arbol_jerarquico(listaCamino,listaCola,1,listaCaminoS)
-				return None
+				if(flag==1):
+					listaCaminoS=caminoSolucion(listaCamino)
+					generar_arbol_jerarquico(listaCamino,listaCola,1,listaCaminoS)
+					
+				return listaCamino,listaCola
 			
 					
 			listaVisitados.add(nodoA)
@@ -319,12 +322,13 @@ def primeroAmplitud(maze,listaCamino):
 #Fin Algoritmo Primero en Amplitud
 
 #Procedimiento para generar busqueda de camino primero en Profundidad    
-def primeroProfundidad(maze,listaCamino):
+def primeroProfundidad(maze,flag):
+	listaCamino=[]
+	listaCola=[]
 	num_filas = int(len(maze)) - 1
 	nodoI = nodo(num_filas,num_filas)
 	nodoF = nodo(0,0)
 	listaVisitados = set()
-	listaCola = []
 	listaCola.append(camino(nodoI, nodoI))
 	cont = 0
 	while listaCola:
@@ -339,10 +343,13 @@ def primeroProfundidad(maze,listaCamino):
 			listaVisitados.add(nodoA)
 			
 			if nodoA == nodoF:
-				listaCaminoS=caminoSolucion(listaCamino)
-				generar_arbol_jerarquico(listaCamino,listaCola,2,listaCaminoS)
-				return None
-			
+				
+				if(flag==1):
+					listaCaminoS=caminoSolucion(listaCamino)
+					generar_arbol_jerarquico(listaCamino,listaCola,2,listaCaminoS)
+					
+				return listaCamino,listaCola
+				
 			listaVecino=obtenerCamino(maze,nodoA)
 			pos = 0
 			for nodo_hijo in listaVecino:
@@ -357,6 +364,7 @@ def primeroProfundidad(maze,listaCamino):
 #Funcion para obtener caminos posibles en la matriz, la misma devuelve una lista de los posbibles
 def obtenerCamino(maze,n):
 	listaCamino=[]
+	listaPosiciones = []
 	tamM = int(len(maze))
 	px=n.posX
 	py=n.posY
@@ -364,18 +372,19 @@ def obtenerCamino(maze,n):
 	if(px-1>=0 and py<tamM and py>=0):
 		if maze[px-1][py]=='0' or maze[px-1][py]=='F':
 			listaCamino.append(nodo(px-1,py))	
-
+			listaPosiciones.append("ARRIBA")
 	if(py-1>=0 and px<tamM and px>=0):
 		if maze[px][py-1]=='0' or maze[px][py-1]=='F':
 			listaCamino.append(nodo(px,py-1))
+			listaPosiciones.append("IZQUIERDA")
 	if(px+1<tamM and py<tamM and py>=0):
 		if maze[px+1][py]=='0' or maze[px+1][py]=='F':
 			listaCamino.append(nodo(px+1,py))	
-	
+			listaPosiciones.append("ABAJO")
 	if(py+1<tamM and px<tamM and px>=0):
 		if maze[px][py+1]=='0' or maze[px][py+1]=='F' :
 			listaCamino.append(nodo(px,py+1))
-		
+			listaPosiciones.append("DERECHA")
 	return listaCamino
 #Fin Funcion para obtener caminos posibles
 
@@ -438,38 +447,140 @@ def generar_arbol_jerarquico(listacamino,listaCola,i,caminoS):
 	elif (i==2):
 		g.render('arbol_primero_profundidad')
 #Fin Procedimiento
+
+def convierteNodoH(lista_camino,tam):
+        listaCaminoS=caminoSolucion(lista_camino)
+        listaCam = []
+        listaCam.append(nodo(tam-1,tam-1))
+        for c in listaCaminoS:
+            listaCam.append(nodo(c.nodoH.posX,c.nodoH.posY))
+        return listaCam   
+
+def casosDePrueba():
+	resultado="Estos seran los casos de prueba para los algoritmos PP y PA.\n"
+	tam = 10
+	ran=10
+	while(tam < 51):
+		resultado+="\nSe está probando con un laberinto de tamaño: " + str(tam) + "x" + str(tam) + ".\n"
+		longPPC = 0
+		longPAC = 0
+		longPPCO = 0
+		longPACO = 0
+		longPPCS = 0
+		longPACS = 0
 		
+		minlongPPC = 10000
+		minlongPAC = 10000
+		minlongPPCO = 10000
+		minlongPACO = 10000
+		minlongPPCS = 10000
+		minlongPACS = 10000
+
+		maxlongPPC = 0
+		maxlongPAC = 0
+		maxlongPPCO = 0
+		maxlongPACO = 0
+		maxlongPPCS = 0
+		maxlongPACS = 0
+		maze = [] 
+		listaCaminoPA = []
+		listaCaminoPP = []
+		listaColaPA = []
+		listaColaPP = []
+		for i in range(0, ran):
+			
+			#LLamado a funciones 
+			maze = gen_lab(tam)
+			listaCaminoPA,listaColaPA=primeroAmplitud(maze,0)
+			listaCaminoPP,listaColaPP=primeroProfundidad(maze,0)
+			if (minlongPPC > len(listaCaminoPP)):
+				minlongPPC = len(listaCaminoPP)
+			if (minlongPAC > len(listaCaminoPA)):
+				minlongPAC = len(listaCaminoPA)	
+			if (minlongPPCO > len(listaColaPP)):
+				minlongPPCO = len(listaColaPP)	
+			if (minlongPACO > len(listaColaPA)):
+				minlongPACO = len(listaColaPA)
+			if (minlongPPCS > len(convierteNodoH(listaCaminoPP,tam))):
+				minlongPPCS = len(convierteNodoH(listaCaminoPP,tam))	
+			if (minlongPACS > len(convierteNodoH(listaCaminoPA,tam))):
+				minlongPACS = len(convierteNodoH(listaCaminoPA,tam))
+				
+			if (maxlongPPC < len(listaCaminoPP)):
+				maxlongPPC = len(listaCaminoPP)
+			if (maxlongPAC < len(listaCaminoPA)):
+				maxlongPAC = len(listaCaminoPA)	
+			if (maxlongPPCO < len(listaColaPP)):
+				maxlongPPCO = len(listaColaPP)	
+			if (maxlongPACO < len(listaColaPA)):
+				maxlongPACO = len(listaColaPA)
+			if (maxlongPPCS < len(convierteNodoH(listaCaminoPP,tam))):
+				maxlongPPCS = len(convierteNodoH(listaCaminoPP,tam))	
+			if (maxlongPACS < len(convierteNodoH(listaCaminoPA,tam))):
+				maxlongPACS = len(convierteNodoH(listaCaminoPA,tam))
+
+			longPPC = longPPC + len(listaCaminoPP)
+			longPAC = longPAC + len(listaCaminoPA)
+			longPPCO = longPPCO + len(listaColaPP)
+			longPACO = longPACO + len(listaColaPA)
+			longPPCS = longPPCS + len(convierteNodoH(listaCaminoPP,tam))
+			longPACS = longPACS + len(convierteNodoH(listaCaminoPA,tam))
+		resultado +="Cant Prom Nodos Totales PP.\n"
+		resultado +="Prom:"+str(longPPC/ran)+"\t min:"+str(minlongPPC)+"\t max:"+str(maxlongPPC)+"\n"
+		resultado +="Cant Prom Nodos Totales PA.\n"
+		resultado +="Prom:"+str(longPAC/ran)+"\t min:"+str(minlongPAC)+"\t max:"+str(maxlongPAC)+"\n"
+		resultado +="Cant Prom Nodos en Cola PP.\n"
+		resultado +="Prom:"+str(longPPCO/ran)+"\t min:"+str(minlongPPCO)+"\t max:"+str(maxlongPPCO)+"\n"
+		resultado +="Cant Prom Nodos en Cola PA.\n"
+		resultado +="Prom:"+str(longPACO/ran)+"\t min:"+str(minlongPACO)+"\t max:"+str(maxlongPACO)+"\n"
+		resultado +="Cant Prom Nodos Camino Sol PP.\n"
+		resultado +="Prom:"+str(longPPCS/ran)+"\t min:"+str(minlongPPCS)+"\t max:"+str(maxlongPPCS)+"\n"
+		resultado +="Cant Prom Nodos Camino Sol PA.\n"
+		resultado +="Prom:"+str(longPACS/ran)+"\t min:"+str(minlongPACS)+"\t max:"+str(maxlongPACS)+"\n"
+		tam=tam+10
+	archivo = open("casos.txt", "w")	
+	archivo.write(resultado)
+	archivo.close()
+	QMessageBox.information(None, "Mensaje", "Se ejecuto correctamente los casos de prueba.")
+
+
 #Procedimiento para generar la imagen de laberinto
-def generarLab(laberinto):
+def generarLab(laberinto,listaCamino,i):
+    
     # Abrir imágenes
     pared = Image.open("pared.png")
     camino = Image.open("camino.png")
- 
+    caminoSol = Image.open("caminoSol.png")
     # Tamaño de la imagen
-    ancho = len(laberinto[0])
-    alto = len(laberinto)
-    imagen = Image.new("RGB", (ancho*50, alto*50), "white")
-
+    tam = len(laberinto)
+    imagen = Image.new("RGB", (tam*50, tam*50), "white")
+    listaCam=[]
+    if (listaCamino is not None):
+        listaCam = convierteNodoH(listaCamino,tam)
     # Pegar imágenes
-    for fila in range(alto):
-        for columna in range(ancho):
-            if laberinto[fila][columna] == '0':
+    for fila in range(tam):
+        for columna in range(tam):
+            if (laberinto[fila][columna] == '0' or laberinto[fila][columna] == 'I' or laberinto[fila][columna] == 'F') and (listaCamino is None or nodo(fila,columna) not in listaCam):
                 img = camino
             elif laberinto[fila][columna] == 'x':
                 img = pared
-            elif laberinto[fila][columna] == 'I':
-                img = camino
-            elif laberinto[fila][columna] == 'F':
-                img = camino
+            elif listaCamino is not None and nodo(fila,columna) in listaCam:
+                img = caminoSol
             else:
                 continue
-
             img = img.resize((50, 50), Image.ANTIALIAS)
             imagen.paste(img, (columna*50, fila*50))
 
-   
-    # Guardar imagen
-    imagen.save("laberinto.png")
+    if(i == 0):
+ 		# Guardar imagen
+        imagen.save("laberinto.png")
+    if(i == 1):
+		# Guardar imagen laberinto algoritmo pp
+        imagen.save("laberintoPP.png")
+    elif(i == 2):
+		# Guardar imagen laberinto algoritmo pa
+        imagen.save("laberintoPA.png")	
+
 
 #Fin Procedimiento
 
@@ -482,25 +593,32 @@ class MenuPrincipal(QMainWindow):
         self.ui.setupUi(self)
         self.ui.btn_pp.clicked.connect(self.abrirNuevaVentanaPP)
         self.ui.btn_pa.clicked.connect(self.abrirNuevaVentanaPA)
+        self.ui.btn_compara.clicked.connect(self.abrirNuevaVentanaCompara)
         self.ui.btn_reload.clicked.connect(self.regenerarLaberinto)
-        validator = QRegExpValidator(QRegExp("^(?:[5-9]|[1-9][0-9]|100)$"), self.ui.tam_lab)
+        self.ui.btn_prueba.clicked.connect(self.abrirNuevaVentanaPruebas)
+        validator = QRegExpValidator(QRegExp("^(?:[5-9]|[1-9][0-9])$"), self.ui.tam_lab)
         self.ui.tam_lab.setValidator(validator)
     ##Procedimiento para Recargar el laberinto y sus algoritmos
     def regenerarLaberinto(self):
         tam = self.ui.obtenerTamMatriz()
         fila = int(tam)
-        if(fila > 4 and fila <101 ):
+        if(fila > 4 and fila <51 ):
             global maze, listaCaminoPA, listaCaminoPP  # Agregar "global" para modificar las variables globales
             maze = []
             listaCaminoPA = []
             listaCaminoPP = []
+            listaColaPA = []
+            listaColaPP = []
+			#LLamado a funciones 
             maze = gen_lab(fila)
-            primeroAmplitud(maze, listaCaminoPA)
-            primeroProfundidad(maze, listaCaminoPP)
-            generarLab(maze)
+            listaCaminoPA,listaColaPA=primeroAmplitud(maze,1)
+            listaCaminoPP,listaColaPP=primeroProfundidad(maze,1)
+            generarLab(maze,None,0)
+            generarLab(maze,listaCaminoPA,2)
+            generarLab(maze,listaCaminoPP,1)
             self.ui.recargarLaberinto()
         else:
-            QMessageBox.information(None, "Mensaje", "Solo se acepta numeros entre el 5 y el 100.")
+            QMessageBox.information(None, "Mensaje", "Solo se acepta numeros entre el 5 y el 50.")
        #Fin Procedimiento
 
     #Procedimiento Para el funcionamiento de los botones    
@@ -511,6 +629,13 @@ class MenuPrincipal(QMainWindow):
     def abrirNuevaVentanaPA(self):
         self.ventana_pp = VentanaPA()
         self.ventana_pp.show()
+
+    def abrirNuevaVentanaCompara(self):
+        self.ventana_compara = VentanaCompara()
+        self.ventana_compara.show()
+
+    def abrirNuevaVentanaPruebas(self):
+        casosDePrueba()			
     #Fin procedimiento
 
 #Clases Para el funcionamiento de las interfaces    
@@ -525,4 +650,23 @@ class VentanaPA(QMainWindow):
         super().__init__()
         self.ui = Ventana_PA()
         self.ui.setupUi(self, listaCaminoPA)
+
+class VentanaCompara(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.ui = Ventana_Compara()
+        self.ui.setupUi(self)
 #Fin De las clases
+
+
+def devuelveMov(caminoMov):
+	if(caminoMov.nodoP.posX < caminoMov.nodoH.posX ):
+		return "Abajo"
+	if(caminoMov.nodoP.posY > caminoMov.nodoH.posY ):
+		return "Izquierda"
+	if(caminoMov.nodoP.posX > caminoMov.nodoH.posX ):
+		return "Arriba"
+	if(caminoMov.nodoP.posY < caminoMov.nodoH.posY ):
+		return "Derecha"
+	
+
