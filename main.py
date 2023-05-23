@@ -1,6 +1,5 @@
 import sys
 import funciones
-from clases import nodo 
 from PyQt5.QtWidgets import QApplication
 from funciones import MenuPrincipal
 
@@ -17,7 +16,7 @@ listaCaminoPP,listaColaPP = funciones.primeroProfundidad(maze,1)
 funciones.generarLab(maze,None,0)
 funciones.generarLab(maze,listaCaminoPP,1)
 funciones.generarLab(maze,listaCaminoPA,2)
-#funciones.casosDePrueba()
+
 #Ejecucion de aplicacion (menu principal)
 if __name__ == "__main__":
     app = QApplication(sys.argv)

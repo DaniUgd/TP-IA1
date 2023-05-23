@@ -1,22 +1,24 @@
-import sys
 
+import pkg_resources
 import graphviz
 from graphviz import Graph
 from clases import nodo 
 from clases import camino
 import random
-import numpy as np
 from colorama import init
 from colorama import Fore, Back, Style
 from PIL import Image
-from PyQt5.QtWidgets import QApplication, QMainWindow,QMessageBox
+from PyQt5.QtWidgets import QMainWindow,QMessageBox
 from VentanaPP import Ventana_PP
 from MenuPrincipal import Ui_MainWindow
 from VentanaPA import Ventana_PA
 from VentanaCompara import Ventana_Compara
 from PyQt5.QtCore import QRegExp
 from PyQt5.QtGui import QRegExpValidator
+
+
 ##Funciones extraidas del archivo Gen-lab.py
+
 
 #Procedimiento que imprime matriz sin grafica
 def printMaze(maze,height,width):
@@ -541,16 +543,17 @@ def casosDePrueba():
 	archivo = open("casos.txt", "w")	
 	archivo.write(resultado)
 	archivo.close()
-	QMessageBox.information(None, "Mensaje", "Se ejecuto correctamente los casos de prueba.")
+	QMessageBox.information(None, "Mensaje", "Se ejecutaron correctamente los casos de prueba. Los casos se guardaron en el archivo 'casos.txt' ubicado en la misma carpeta que el ejecutable.")
 
 
 #Procedimiento para generar la imagen de laberinto
 def generarLab(laberinto,listaCamino,i):
     
     # Abrir imágenes
-    pared = Image.open("pared.png")
-    camino = Image.open("camino.png")
-    caminoSol = Image.open("caminoSol.png")
+	
+    pared = Image.open(pkg_resources.resource_filename(__name__, 'pared.png'))
+    camino = Image.open(pkg_resources.resource_filename(__name__, 'camino.png'))
+    caminoSol = Image.open(pkg_resources.resource_filename(__name__, 'caminoSol.png'))
     # Tamaño de la imagen
     tam = len(laberinto)
     imagen = Image.new("RGB", (tam*50, tam*50), "white")
